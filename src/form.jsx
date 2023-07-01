@@ -1,6 +1,53 @@
+import JustValidate from 'just-validate';
+import { useRef, useEffect } from 'react';
+import { useSubmit } from 'react-router-dom';
+
 const Form = () => {
+  const submit = useSubmit();
+  const formRef = useRef(null);
+  useEffect(() => {
+    const validator = new JustValidate(formRef.current, {
+      errorFieldCssClass: 'is-invalid',
+      successFieldCssClass: 'is-valid',
+      errorLabelCssClass: 'invalid-feedback',
+    });
+    validator
+      .addField('#name', [
+        { rule: 'required' },
+        { rule: 'minLength', value: 3 },
+        { rule: 'maxLength', value: 15 },
+      ])
+      .addField('#email', [{ rule: 'required' }, { rule: 'email' }])
+      .addField('#password', [
+        {
+          rule: 'required',
+        },
+        {
+          rule: 'password',
+        },
+      ])
+      .addField('#age', [
+        { rule: 'required' },
+        {
+          rule: 'number',
+        },
+        { rule: 'minNumber', value: 18 },
+        { rule: 'maxNumber', value: 80 },
+      ])
+      .onSuccess((e) => {
+        console.log(Object.fromEntries(new FormData(e.target)));
+        submit(new FormData(e.target), {
+          method: 'post',
+        });
+      });
+
+    return () => {
+      validator.destroy();
+    };
+  }, []);
   return (
     <form
+      ref={formRef}
       className="card p-4 shadow"
       id="student_form"
       autoComplete="off"
